@@ -4,56 +4,55 @@ const router = Router();
 import HistoryService from '../../service/historyService.js';
 import WeatherService from '../../service/weatherService.js';
 
-//  POST Request with city name to retrieve weather data
-router.post('/', async (req, res) => {
+// POST request to get weather data for a city and add it to search history if it doesn't already exist in the history
+router.post('/', async (req: Request, res: Response) => {
   try {
     const city = req.body.cityName;
     if (!city) {
-      return res.status(400).json({ message: 'City name is required.' });
+      return res.status(400).json({ error: `City name is required: ${city}` });
     }
 
-    const weather = await WeatherService.getWeatherForCity(city);
+    const weatherData = await WeatherService.getWeatherForCity(city);
 
-    if (!weather || weather.length === 0) {
-      return res.status(404).json({ message: 'City not found. Please try again.' });
+    // Check for existing city before adding to history
+    const existingCity = await HistoryService.getCities().then((cities) =>
+      cities.find((existingCity: { name: string }) => existingCity.name === city)
+    );
+
+    if (!existingCity) {
+      await HistoryService.addCity(city);
+      console.log(`City "${city}" added to search history.`);
+    } else {
+      console.log(`City "${city}" already exists in search history.`);
     }
 
-    HistoryService.addCity(city);
-    return res.json(weather);
-
-  } catch (err: any) {
-    console.error('Error fetching weather:', err.message || err);
-
-    if (err.message && err.message.includes('City not found')) {
-      return res.status(404).json({ message: 'City not found. Please try again.' });
-    }
-
-    return res.status(500).json({ message: 'An unexpected error occurred.' });
+    return res.status(200).json(weatherData);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to fetch weather data' });
   }
 });
 
-//  GET search history
+// GET request to fetch search history of cities
 router.get('/history', async (_req: Request, res: Response) => {
   try {
-    const savedCities = await HistoryService.getCities();
-    res.json(savedCities);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to load search history.' });
+    const cities = await HistoryService.getCities();
+    res.json(cities);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch search history' });
   }
 });
 
-// * BONUS  DELETE city from search history
+// * DELETE request to remove a city from search history by id
 router.delete('/history/:id', async (req: Request, res: Response) => {
   try {
-    if (!req.params.id) {
-      res.status(400).json({ message: 'City id is required.' });
-    }
-    await HistoryService.removeCity(req.params.id);
-    res.json({ success: 'City successfully removed from search history.' });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Failed to remove city from history.' });
+    const cityId = req.params.id;
+    await HistoryService.removeCity(cityId);
+    res.json({ message: 'City removed from search history' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to delete city from search history' });
   }
 });
 

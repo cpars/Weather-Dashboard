@@ -1,58 +1,70 @@
 import fs from 'node:fs/promises';
 import { v4 as uuidv4 } from 'uuid';
-//  Define a City class with name and id properties
 class City {
     constructor(name, id) {
         this.name = name;
         this.id = id;
     }
 }
-//  Complete the HistoryService class
+// HistoryService class definition with methods to read, write, get, add, and remove cities from the searchHistory.json file
 class HistoryService {
-    //  Define a read method that reads from the searchHistory.json file
+    // read method that reads the searchHistory.json file and returns the parsed data
     async read() {
-        return await fs.readFile('db/db.json', {
-            flag: 'a+',
-            encoding: 'utf-8',
-        });
-    }
-    //  Define a write method that writes the updated cities array to the searchHistory.json file
-    async write(cities) {
-        return await fs.writeFile('db/db.json', JSON.stringify(cities, null, '\t'));
-    }
-    //  Define a getCities method that reads the cities from the searchHistory.json file and returns them as an array of City objects
-    async getCities() {
-        return await this.read().then((cities) => {
-            let parsedCities;
-            try {
-                parsedCities = [].concat(JSON.parse(cities));
-            }
-            catch (error) {
-                parsedCities = [];
-            }
-            return parsedCities;
-        });
-    }
-    //  Define an addCity method that adds a city to the searchHistory.json file
-    async addCity(city) {
-        if (!city) {
-            throw new Error('City name is required');
+        const filePath = './db/searchHistory.json';
+        try {
+            const data = await fs.readFile(filePath, 'utf-8');
+            return JSON.parse(data);
         }
-        const newCity = new City(city, uuidv4());
-        return await this.getCities().then((cities) => {
-            if (cities.find((index) => index.name === city)) {
-                return cities;
-            }
-            return [...cities, newCity];
-        })
-            .then((updatedCities) => this.write(updatedCities))
-            .then(() => newCity);
+        catch (error) {
+            console.error('Error reading or parsing search history:', error);
+        }
     }
-    // * BONUS  Define a removeCity method that removes a city from the searchHistory.json file
+    // write method that writes the cities to the searchHistory.json file
+    async write(cities) {
+        const filePath = './db/searchHistory.json';
+        try {
+            await fs.writeFile(filePath, JSON.stringify(cities, null, 2));
+        }
+        catch (error) {
+            console.error('Error writing search history:', error);
+        }
+    }
+    // get method that returns the cities from the searchHistory.json file
+    async getCities() {
+        try {
+            const cities = await this.read();
+            return cities;
+        }
+        catch (error) {
+            console.error('Error getting cities:', error);
+            return [];
+        }
+    }
+    // addCity method that adds a city to the searchHistory.json file
+    async addCity(city) {
+        try {
+            const cities = await this.read();
+            const newCity = new City(city, uuidv4());
+            cities.push(newCity);
+            await this.write(cities);
+            return newCity;
+        }
+        catch (error) {
+            console.error('Error adding city:', error);
+            return null;
+        }
+    }
+    // removeCity method that removes a city from the searchHistory.json file
     async removeCity(id) {
-        return await this.getCities()
-            .then((cities) => cities.filter((city) => city.id !== id))
-            .then((filteredCities) => this.write(filteredCities));
+        try {
+            const cities = await this.read();
+            const filteredCities = cities.filter((city) => city.id !== id);
+            await this.write(filteredCities);
+        }
+        catch (error) {
+            console.error('Error removing city:', error);
+        }
     }
 }
+// Export an instance of the HistoryService class to be used in other files
 export default new HistoryService();

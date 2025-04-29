@@ -4,7 +4,7 @@ import { Router } from 'express';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const router = Router();
-//  Define route to serve index.html
+// get the index.html file from the dist folder and send it to the client
 router.get('/', (_req, res) => {
     res.sendFile(path.join(__dirname, '../../../client/dist/index.html'));
 });

@@ -35,33 +35,19 @@ API Calls
 */
 
 const fetchWeather = async (cityName: string) => {
-  try {
-    const response = await fetch('/api/weather/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ cityName }),
-    });
+  const response = await fetch('/api/weather/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ cityName }),
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Something went wrong.');
-    }
+  const weatherData = await response.json();
 
-    const weatherData = await response.json();
-
-    console.log('weatherData: ', weatherData);
-
-    renderCurrentWeather(weatherData[0]);
-    renderForecast(weatherData.slice(1));
-
-  } catch (error: any) {
-    console.error('Fetch Weather Error:', error.message);
-    alert(error.message || 'Something went wrong while fetching weather.');
-  }
+  renderCurrentWeather(weatherData.currentWeather);
+  renderForecast(weatherData.forecast);
 };
-
 
 const fetchSearchHistory = async () => {
   const history = await fetch('/api/weather/history', {

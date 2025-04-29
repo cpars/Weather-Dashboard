@@ -1,0 +1,22 @@
+[
+  {
+    "name": "San Diego",
+    "id": "e0ad36b8-a1ec-433d-b02a-b2a73e5f69ea"
+  },
+  {
+    "name": "New Orleans",
+    "id": "4e5cbed2-6b01-4eb1-9fde-08a917b3a703"
+  },
+  {
+    "name": "New York",
+    "id": "55857d8f-ae7a-4b0f-93c5-24565bb08ba8"
+  },
+  {
+    "name": "Baltimore",
+    "id": "7d6f6109-0be8-4c44-9656-ad00060158bf"
+  },
+  {
+    "name": "San Francisco",
+    "id": "0f8b2c33-e42b-4fe7-b595-1e903ac896a4"
+  }
+]
